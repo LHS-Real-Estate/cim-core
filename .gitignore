@@ -19,3 +19,7 @@
 
 # Go workspace file
 go.work
+.history/
+.docker/zsh/history/.zsh_history
+.docker/dbdata
+.vscode
