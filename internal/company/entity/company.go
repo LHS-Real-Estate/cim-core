@@ -1,6 +1,8 @@
 package entity
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"time"
 
 	"github.com/LHS-Real-Estate/cim-core/internal/pkg/validator"
@@ -46,4 +48,9 @@ func validateCompany(c Company) error {
 	err := cv.Validate(c)
 
 	return err
+}
+
+func CompanyRootPath(companyID string) string {
+	hash := md5.Sum([]byte(companyID))
+	return "Company-" + hex.EncodeToString(hash[:])
 }
