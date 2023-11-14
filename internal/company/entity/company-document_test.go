@@ -8,7 +8,7 @@ import (
 
 	"github.com/LHS-Real-Estate/cim-core/internal/company/entity"
 	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCompanyDocument_NewDocument(t *testing.T) {
@@ -35,13 +35,13 @@ func TestCompanyDocument_NewDocument(t *testing.T) {
 
 	testsTable := []testCase{
 		{
-			test:           "Empty CompanyID, Title and file extension validation",
+			test:           "Empty CompanyID, Title and file extension error validation",
 			input:          input_output{},
 			expectedOutput: input_output{},
-			expectedError:  errors.New("invalid fields: CompanyDocument.CompanyID: \"\", Company.Name: \"\", Company.File.Extension: \"\""),
+			expectedError:  errors.New("invalid fields: CompanyDocument.CompanyID: \"\", CompanyDocument.Title: \"\", CompanyDocument.File.Extension: \"\""),
 		},
 		{
-			test: "CompanyDocument ID, CompanyID and Title length validation",
+			test: "CompanyDocument ID, CompanyID and Title length error validation",
 			input: input_output{
 				id:          "Invalid ID",
 				companyID:   "Invalid Company ID",
@@ -60,10 +60,10 @@ func TestCompanyDocument_NewDocument(t *testing.T) {
 				createdAt:   timeNow,
 				lastUpdated: timeNow,
 			},
-			expectedError: errors.New("invalid fields: CompanyDocument.ID: \"Invalid ID\", CompanyDocument.CompanyID: \"Invalid Company ID\", CompanyDocument.Title\"AA\""),
+			expectedError: errors.New("invalid fields: CompanyDocument.ID: \"Invalid ID\", CompanyDocument.CompanyID: \"Invalid Company ID\", CompanyDocument.Title: \"AA\""),
 		},
 		{
-			test: "CompanyDocument CreatedAt and LastUpdated validation",
+			test: "CompanyDocument CreatedAt and LastUpdated error validation",
 			input: input_output{
 				id:          testId,
 				companyID:   testId,
@@ -82,7 +82,7 @@ func TestCompanyDocument_NewDocument(t *testing.T) {
 				createdAt:   timeNow,
 				lastUpdated: timeBefore,
 			},
-			expectedError: fmt.Errorf("invalid fields: Company.CreatedAt: \"%s\", CompanyDocument.LastUpdated: \"%s\"", timeNow, timeBefore),
+			expectedError: fmt.Errorf("invalid fields: CompanyDocument.LastUpdated: \"%s\", CompanyDocument.CreatedAt: \"%s\"", timeBefore, timeNow),
 		},
 		{
 			test: "Valid CompanyDocument fields generating new ID, FilePath, CreatedAt and LastUpdated when empty",
@@ -142,35 +142,35 @@ func TestCompanyDocument_NewDocument(t *testing.T) {
 			tc.input.createdAt,
 		)
 
-		assert.NotEmpty(t, compDoc.ID)
+		require.NotEmpty(t, compDoc.ID)
 
 		if tc.input.id != "" {
-			assert.Equal(t, compDoc.ID, tc.expectedOutput.id)
+			require.Equal(t, tc.expectedOutput.id, compDoc.ID)
 		}
 
-		assert.Equal(t, compDoc.CompanyID, tc.expectedOutput.companyID)
-		assert.Equal(t, compDoc.Title, tc.expectedOutput.title)
+		require.Equal(t, tc.expectedOutput.companyID, compDoc.CompanyID)
+		require.Equal(t, tc.expectedOutput.title, compDoc.Title)
 
-		assert.NotEmpty(t, compDoc.File.FilePath)
-		assert.Equal(t, compDoc.File.Extension, tc.expectedOutput.extension)
+		require.NotEmpty(t, compDoc.File.FilePath)
+		require.Equal(t, tc.expectedOutput.extension, compDoc.File.Extension)
 
-		assert.NotZero(t, compDoc.CreatedAt)
+		require.NotZero(t, compDoc.CreatedAt)
 
 		if !tc.input.createdAt.IsZero() {
-			assert.Equal(t, compDoc.CreatedAt, tc.expectedOutput.createdAt)
+			require.Equal(t, tc.expectedOutput.createdAt, compDoc.CreatedAt)
 		}
 
-		assert.NotZero(t, compDoc.LastUpdated)
+		require.NotZero(t, compDoc.LastUpdated)
 
 		if !tc.input.createdAt.IsZero() {
-			assert.Equal(t, compDoc.LastUpdated, tc.expectedOutput.lastUpdated)
+			require.Equal(t, tc.expectedOutput.lastUpdated, compDoc.LastUpdated)
 		}
 
 		if tc.expectedError != nil {
-			assert.Error(t, err, tc.expectedError)
+			require.Equal(t, tc.expectedError, err)
 			continue
 		}
 
-		assert.Nil(t, err)
+		require.Nil(t, err)
 	}
 }
