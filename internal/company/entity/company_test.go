@@ -8,7 +8,7 @@ import (
 
 	"github.com/LHS-Real-Estate/cim-core/internal/company/entity"
 	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCompany_NewCompany(t *testing.T) {
@@ -34,13 +34,13 @@ func TestCompany_NewCompany(t *testing.T) {
 
 	testsTable := []testCase{
 		{
-			test:           "Empty EIN, Name and FullName validation",
+			test:           "Empty EIN, Name and FullName error validation",
 			input:          input_output{id: testId, createdAt: timeNow},
 			expectedOutput: input_output{id: testId, createdAt: timeNow},
 			expectedError:  errors.New("invalid fields: Company.EIN: \"\", Company.Name: \"\", Company.FullName: \"\""),
 		},
 		{
-			test: "Company Name and FullName length validation",
+			test: "Company Name and FullName length error validation",
 			input: input_output{
 				id:                    testId,
 				ein:                   "01.234.567/0001-89",
@@ -59,10 +59,10 @@ func TestCompany_NewCompany(t *testing.T) {
 				stateRegistration:     "012345678.90-12",
 				createdAt:             timeNow,
 			},
-			expectedError: errors.New("invalid fields: Company.Name: \"\", Company.FullName: \"\""),
+			expectedError: errors.New("invalid fields: Company.Name: \"AA\", Company.FullName: \"AA\""),
 		},
 		{
-			test: "Company ID validation",
+			test: "Company ID error validation",
 			input: input_output{
 				id:                    "Invalid UUID",
 				ein:                   "01.234.567/0001-89",
@@ -81,7 +81,7 @@ func TestCompany_NewCompany(t *testing.T) {
 				stateRegistration:     "012345678.90-12",
 				createdAt:             timeNow,
 			},
-			expectedError: errors.New("invalid fields: Company.ID: \"\""),
+			expectedError: errors.New("invalid fields: Company.ID: \"Invalid UUID\""),
 		},
 		{
 			test: "Valid Company fields generating new ID and CreatedAt when empty",
@@ -130,7 +130,7 @@ func TestCompany_NewCompany(t *testing.T) {
 	}
 
 	for _, tc := range testsTable {
-		fmt.Printf("Test case: %s", tc.test)
+		fmt.Printf("Test case: %s\n\n", tc.test)
 		comp, err := entity.NewCompany(
 			tc.input.id,
 			tc.input.ein,
@@ -141,29 +141,29 @@ func TestCompany_NewCompany(t *testing.T) {
 			tc.input.createdAt,
 		)
 
-		assert.NotEmpty(t, comp.ID)
+		require.NotEmpty(t, comp.ID)
 
 		if tc.input.id != "" {
-			assert.Equal(t, comp.ID, tc.expectedOutput.id)
+			require.Equal(t, tc.expectedOutput.id, comp.ID)
 		}
 
-		assert.Equal(t, comp.EIN, tc.expectedOutput.ein)
-		assert.Equal(t, comp.Name, tc.expectedOutput.name)
-		assert.Equal(t, comp.FullName, tc.expectedOutput.fullName)
-		assert.Equal(t, comp.MunicipalRegistration, tc.expectedOutput.municipalRegistration)
-		assert.Equal(t, comp.StateRegistration, tc.expectedOutput.stateRegistration)
+		require.Equal(t, tc.expectedOutput.ein, comp.EIN)
+		require.Equal(t, tc.expectedOutput.name, comp.Name)
+		require.Equal(t, tc.expectedOutput.fullName, comp.FullName)
+		require.Equal(t, tc.expectedOutput.municipalRegistration, comp.MunicipalRegistration)
+		require.Equal(t, tc.expectedOutput.stateRegistration, comp.StateRegistration)
 
-		assert.NotZero(t, comp.CreatedAt)
+		require.NotZero(t, comp.CreatedAt)
 
 		if !tc.input.createdAt.IsZero() {
-			assert.Equal(t, comp.CreatedAt, tc.expectedOutput.createdAt)
+			require.Equal(t, tc.expectedOutput.createdAt, comp.CreatedAt)
 		}
 
 		if tc.expectedError != nil {
-			assert.Error(t, err, tc.expectedError)
+			require.Equal(t, tc.expectedError, err)
 			continue
 		}
 
-		assert.Nil(t, err)
+		require.Nil(t, err)
 	}
 }
