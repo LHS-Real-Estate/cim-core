@@ -8,7 +8,7 @@ import (
 	ed "github.com/yamauthi/event-dispatcher"
 )
 
-type CreateCompanyInputDTO struct {
+type CompanyCreateInputDTO struct {
 	EIN                   string
 	Name                  string
 	FullName              string
@@ -16,7 +16,7 @@ type CreateCompanyInputDTO struct {
 	StateRegistration     string
 }
 
-type CreateCompanyOutputDTO struct {
+type CompanyCreateOutputDTO struct {
 	ID                    string
 	EIN                   string
 	Name                  string
@@ -26,25 +26,25 @@ type CreateCompanyOutputDTO struct {
 	CreatedAt             time.Time
 }
 
-type CreateCompanyUseCase struct {
+type CompanyCreateUseCase struct {
 	CompanyRepository   entity.CompanyRepositoryInterface
 	CompanyCreatedEvent company_event.CompanyCreated
 	Dispatcher          ed.EventDispatcherInterface
 }
 
-func NewCreateCompanyUseCase(
+func NewCompanyCreateUseCase(
 	CompanyRepository entity.CompanyRepositoryInterface,
 	CompanyCreatedEvent company_event.CompanyCreated,
 	Dispatcher ed.EventDispatcherInterface,
-) *CreateCompanyUseCase {
-	return &CreateCompanyUseCase{
+) *CompanyCreateUseCase {
+	return &CompanyCreateUseCase{
 		CompanyRepository:   CompanyRepository,
 		CompanyCreatedEvent: CompanyCreatedEvent,
 		Dispatcher:          Dispatcher,
 	}
 }
 
-func (uc *CreateCompanyUseCase) Execute(input CreateCompanyInputDTO) (CreateCompanyOutputDTO, error) {
+func (uc *CompanyCreateUseCase) Execute(input CompanyCreateInputDTO) (CompanyCreateOutputDTO, error) {
 	c, err := entity.NewCompany(
 		"", // Will generate ID
 		input.EIN,
@@ -56,15 +56,15 @@ func (uc *CreateCompanyUseCase) Execute(input CreateCompanyInputDTO) (CreateComp
 	)
 
 	if err != nil {
-		return CreateCompanyOutputDTO{}, err
+		return CompanyCreateOutputDTO{}, err
 	}
 
 	err = uc.CompanyRepository.Create(&c)
 	if err != nil {
-		return CreateCompanyOutputDTO{}, err
+		return CompanyCreateOutputDTO{}, err
 	}
 
-	dto := CreateCompanyOutputDTO{
+	dto := CompanyCreateOutputDTO{
 		ID:                    c.ID,
 		EIN:                   c.EIN,
 		Name:                  c.Name,

@@ -2,72 +2,36 @@ package usecase_test
 
 import (
 	"errors"
-	"testing"
 	"time"
 
-	"github.com/LHS-Real-Estate/cim-core/internal/company/entity"
 	company_event "github.com/LHS-Real-Estate/cim-core/internal/company/event"
 	"github.com/LHS-Real-Estate/cim-core/internal/company/usecase"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"github.com/yamauthi/event-dispatcher"
 )
 
-type MockCompanyRepository struct {
-	mock.Mock
-}
-
-func (r *MockCompanyRepository) ChangeInformation(company *entity.Company) error { return nil }
-func (r *MockCompanyRepository) Create(company *entity.Company) error {
-	args := r.Called(company)
-	return args.Error(0)
-}
-func (r *MockCompanyRepository) Get(companyID string) (entity.Company, error) {
-	return entity.Company{}, nil
-}
-
-type MockEventDispatcher struct {
-	mock.Mock
-}
-
-func (ed *MockEventDispatcher) Clear() {}
-func (ed *MockEventDispatcher) Dispatch(event event.EventInterface) {
-	ed.Called(mock.AnythingOfType("event.EventInterface"))
-}
-func (ed *MockEventDispatcher) Has(eventName string, handler event.EventHandlerInterface) bool {
-	return true
-}
-func (ed *MockEventDispatcher) Register(eventName string, handler event.EventHandlerInterface) error {
-	return nil
-}
-func (ed *MockEventDispatcher) Remove(eventName string, handler event.EventHandlerInterface) {}
-
-type CreateCompanyUseCaseTestSuite struct {
+type CompanyCreateUseCaseTestSuite struct {
 	suite.Suite
 	MockCompanyRepository *MockCompanyRepository
 	CompanyCreatedEvent   *company_event.CompanyCreated
 	MockDispatcher        *MockEventDispatcher
-	UseCase               *usecase.CreateCompanyUseCase
+	UseCase               *usecase.CompanyCreateUseCase
 }
 
-func TestSuite(t *testing.T) {
-	suite.Run(t, new(CreateCompanyUseCaseTestSuite))
-}
-
-func (suite *CreateCompanyUseCaseTestSuite) SetupTest() {
+func (suite *CompanyCreateUseCaseTestSuite) SetupTest() {
 	suite.MockCompanyRepository = &MockCompanyRepository{}
 	suite.CompanyCreatedEvent = company_event.NewCompanyCreated()
 	suite.MockDispatcher = &MockEventDispatcher{}
-	suite.UseCase = usecase.NewCreateCompanyUseCase(
+	suite.UseCase = usecase.NewCompanyCreateUseCase(
 		suite.MockCompanyRepository,
 		*suite.CompanyCreatedEvent,
 		suite.MockDispatcher,
 	)
 }
 
-func (suite *CreateCompanyUseCaseTestSuite) TestCreateCompanyUseCase_Execute_CompanyEntityError() {
+func (suite *CompanyCreateUseCaseTestSuite) TestCompanyCreateUseCase_Execute_CompanyEntityError() {
 	//Invalid Company Input
-	input := usecase.CreateCompanyInputDTO{
+	input := usecase.CompanyCreateInputDTO{
 		EIN:                   "A",
 		Name:                  "A",
 		FullName:              "A",
@@ -85,8 +49,8 @@ func (suite *CreateCompanyUseCaseTestSuite) TestCreateCompanyUseCase_Execute_Com
 	suite.MockDispatcher.AssertNumberOfCalls(suite.T(), "Dispatch", 0)
 }
 
-func (suite *CreateCompanyUseCaseTestSuite) TestCreateCompanyUseCase_Execute_CompanyRepositoryCreateError() {
-	input := usecase.CreateCompanyInputDTO{
+func (suite *CompanyCreateUseCaseTestSuite) TestCompanyCreateUseCase_Execute_CompanyRepositoryCreateError() {
+	input := usecase.CompanyCreateInputDTO{
 		EIN:                   "12.345.678/0001-90",
 		Name:                  "Company Test",
 		FullName:              "The Company Test Inc.",
@@ -109,8 +73,8 @@ func (suite *CreateCompanyUseCaseTestSuite) TestCreateCompanyUseCase_Execute_Com
 	suite.MockDispatcher.AssertNumberOfCalls(suite.T(), "Dispatch", 0)
 }
 
-func (suite *CreateCompanyUseCaseTestSuite) TestCreateCompanyUseCase_Execute() {
-	validInput := usecase.CreateCompanyInputDTO{
+func (suite *CompanyCreateUseCaseTestSuite) TestCompanyCreateUseCase_Execute() {
+	validInput := usecase.CompanyCreateInputDTO{
 		EIN:                   "12.345.678/0001-90",
 		Name:                  "Company Test",
 		FullName:              "The Company Test Inc.",
@@ -118,7 +82,7 @@ func (suite *CreateCompanyUseCaseTestSuite) TestCreateCompanyUseCase_Execute() {
 		StateRegistration:     "123456789.00-12",
 	}
 
-	expectedOutput := usecase.CreateCompanyOutputDTO{
+	expectedOutput := usecase.CompanyCreateOutputDTO{
 		ID:                    "VALID UUID",
 		EIN:                   validInput.EIN,
 		Name:                  validInput.Name,
