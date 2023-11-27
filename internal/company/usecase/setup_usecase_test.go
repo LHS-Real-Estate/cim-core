@@ -45,4 +45,5 @@ func (ed *MockEventDispatcher) Remove(eventName string, handler event.EventHandl
 func TestSuite(t *testing.T) {
 	suite.Run(t, new(CompanyCreateUseCaseTestSuite))
 	suite.Run(t, new(CompanyChangeInformationUseCaseTestSuite))
+	suite.Run(t, new(CompanyGetUseCaseTestSuite))
 }
